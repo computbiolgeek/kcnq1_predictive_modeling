@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "#!/usr/bin/env Rscript\n\n# information gain\nlibrary(argparser)\n\n# creat a argparser object for parsing command line arguments\nargs_parser <- arg_parser(description = \"This script computes information gain for a feature\")\nargs_parser <- add_argument(parser = args_parser, arg = \"--input\", help = \"input file\")\nargs_parser <- add_argument(parser = args_parser, arg = \"--output\", help = \"output file\")\nargs_parser <- add_argument(parser = args_parser, arg = \"--header\", help = \"has headers?\", default = \"no\")\nargs <- parse_args(parser = args_parser)\n\n# load data set\ndf <- read.csv(file = args$input, header = ifelse(args$header %in% c(\"y\", \"yes\", \"Y\", \"Yes\"), TRUE, FALSE), stringsAsFactors = TRUE)\ncolnames(df) <- c(\"feature\", \"label\")\n\n# function that computes entropy\nentropy <- function(x) {\n  if(!is.factor(x)) {\n    warning(\"given object is not a factor object, attempt was made to convert it to a factor\")\n    x <- as.factor(x)\n  }\n  p <- table(x) / length(x)\n  return(-sum(ifelse(p == 0 | p == 1, 0, p * log2(p))))\n}\n\n# compute information gain\nemp_ent <- entropy(df$label) # empirical entropy\nn_rows <- nrow(df)\ncond_ents <- numeric(length = n_rows)\nfeature_ents <- numeric(length = n_rows)\ndf_sorted <- df[order(df$feature),]\nfor(i in 1:n_rows) {\n  cond_ents[i] <- i / n_rows * entropy(df_sorted[1:i, \"label\"]) + \n    (1 - i / n_rows) * entropy(df_sorted[(i+1):n_rows, \"label\"])\n  feature_ents[i] <- entropy(1:n_rows <= i)\n}\ninfo_gain <- emp_ent - cond_ents\ninfo_gain_ratio <- info_gain / feature_ents\ninfo_gain_df <- data.frame(threshold = df_sorted$feature, info_gain = info_gain, info_gain_ratio = info_gain_ratio)\nprint(info_gain_df[which.max(info_gain_df$info_gain_ratio),])\nwrite.csv(x = info_gain_df, file = args$output, row.names = FALSE)",
+    "created" : 1496252337034.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3394934241",
+    "id" : "50E86716",
+    "lastKnownWriteTime" : 1496269439,
+    "last_content_update" : 1496269439054,
+    "path" : "~/workspace/rscripts/kcnq1_modeling/scripts/information_gain.R",
+    "project_path" : "scripts/information_gain.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

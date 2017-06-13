@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "# load required libraries\nlibrary(ROCR)\n\n# load data set\nkcnq_df <- read.csv(file = \"training_dataset.csv\", header = TRUE, stringsAsFactors = FALSE)\n\n# split the dataset into negatives and positives, drop levels that do not occur\nsubsets <- split(x = kcnq_df, f = as.factor(kcnq_df$label), drop = TRUE)\nnegatives <- subsets[[1]]\npositives <- subsets[[2]]\n\n# shuffle the subsets\nnegatives <- negatives[sample(1:nrow(negatives)),]\npositives <- positives[sample(1:nrow(positives)),]\n\n# repeated k-fold cross-validation\nr <- 200\nk <- 3\naucs <- numeric(length = k)\n# set.seed(seed = 111111)\nfor(i in 1:r) {\n  neg.folds <- cut(x = 1:nrow(negatives), breaks = k, labels = FALSE)\n  pos.folds <- cut(x = 1:nrow(positives), breaks = k, labels = FALSE)\n  for(j in 1:k) {\n    # test set\n    test <- rbind(negatives[neg.folds == j,], positives[pos.folds == j,])\n    # training set\n    train <- rbind(negatives[neg.folds !=j,], positives[pos.folds != j,])\n    # logistic regression model\n    logit.model <- glm(label ~ pssm + erate, data = train, family = \"binomial\")\n    # make predictions on the test set\n    test$logit.pred <- predict(object = logit.model, newdata = test, type = \"response\")\n    # compute area under the ROC curve, or AUC\n    rocr <- prediction(predictions = test$logit.pred, labels = test$label)\n    perf <- performance(prediction.obj = rocr, measure = \"auc\")\n    aucs[(i-1)*k+j] <- unlist(perf@y.values)\n  }\n}\n\n# print the mean AUC\nprint(mean(aucs))",
+    "created" : 1496071079487.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2804113322",
+    "id" : "149D78A4",
+    "lastKnownWriteTime" : 1496073488,
+    "last_content_update" : 1496073488579,
+    "path" : "~/workspace/rscripts/kcnq1_modeling/logistic_regression.R",
+    "project_path" : "logistic_regression.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

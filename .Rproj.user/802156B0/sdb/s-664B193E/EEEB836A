@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "# load required libraries\nlibrary(nnet)\nlibrary(ROCR)\n\n# load data set\ndatafile <- \"training_dataset.csv\"\nkcnq_df <- read.csv(file = datafile, header = TRUE, stringsAsFactors = FALSE)\n\n# split the dataset into negatives and positives, drop levels that do not occur\nsubsets <- split(x = kcnq_df, f = as.factor(kcnq_df$label), drop = TRUE)\nnegatives <- subsets[[1]]\npositives <- subsets[[2]]\n\n# shuffle the subsets\nnegatives <- negatives[sample(1:nrow(negatives)),]\npositives <- positives[sample(1:nrow(positives)),]\n\n# repeated k-fold cross-validation\nr <- 200\nk <- 3\naucs <- numeric(length = k)\nhidden.layer <- 3\nset.seed(seed = 111111)\nfor(i in 1:r) {\n  neg.folds <- cut(x = 1:nrow(negatives), breaks = k, labels = FALSE)\n  pos.folds <- cut(x = 1:nrow(positives), breaks = k, labels = FALSE)\n  for(j in 1:k) {\n    # test set\n    test <- rbind(negatives[neg.folds == j,], positives[pos.folds == j,])\n    # training set\n    train <- rbind(negatives[neg.folds !=j,], positives[pos.folds != j,])\n    # logistic regression model\n    nnet.model <- nnet(label ~ pssm + erate, data = train, size = hidden.layer, decay = 0.02, maxit = 1000)\n    # make predictions on the test set\n    test$nnet.pred <- predict(object = nnet.model, newdata = test, type = \"raw\")\n    # compute area under the ROC curve, or AUC\n    rocr <- prediction(predictions = test$nnet.pred, labels = test$label)\n    perf <- performance(prediction.obj = rocr, measure = \"auc\")\n    aucs[(i-1)*k+j] <- unlist(perf@y.values)\n  }\n}\n\n# print the mean AUC\nprint(mean(aucs))",
+    "created" : 1496075017264.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "890322012",
+    "id" : "EEEB836A",
+    "lastKnownWriteTime" : 1495128511,
+    "last_content_update" : 1495128511,
+    "path" : "~/workspace/rscripts/kcnq1_modeling/neural_net_cv.R",
+    "project_path" : "neural_net_cv.R",
+    "properties" : {
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

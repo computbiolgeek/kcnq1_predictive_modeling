@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "# load libraries required by the analysis\nlibrary(ROCR)\nlibrary(argparser)\n\n# create an argparser object for parsing command line arguments\nargs.parser <- arg_parser(description = \"This script takes a list of prediction, label pairs and computes \n                          performance measures at each possible thresholds. The results are stored in a data frame\")\nargs.parser <- add_argument(parser = args.parser, arg = \"-i\", help = \"input file\")\nargs.parser <- add_argument(parser = args.parser, arg = \"-o\", help = \"output file\")\n\n# parse command line arguments\nargv <- parse_args(parser = args.parser)\n\n# load data\ndf <- read.csv(file = argv$i, header = FALSE, stringsAsFactors = TRUE)\ncolnames(df) <- c(\"prob\", \"label\")\n\n# create a ROCR prediction object the first four columns are: res_id, wild_type, variant, prob, and label\nrocr.prediction <- prediction(predictions = df$prob, labels = df$label)\n\n# compute  auc and store it in the numeric vector aucs\nauc <- unlist(performance(prediction.obj = rocr.prediction, measure = \"auc\")@y.values)\n\n# compute mcc and store it in the numeric vector mccs\nmats.unlisted <- unlist(performance(prediction.obj = rocr.prediction, measure = \"mat\")@y.values)\n\n# add tpr\ntpr.unlisted <- unlist(performance(prediction.obj = rocr.prediction, measure = \"tpr\")@y.values)\n\n# add tnr\ntnr.unlisted <- unlist(performance(prediction.obj = rocr.prediction, measure = \"tnr\")@y.values)\n\n# add ppv\nppv.unlisted <- unlist(performance(prediction.obj = rocr.prediction, measure = \"ppv\")@y.values)\n\n# add npv\nnpv.unlisted <- unlist(performance(prediction.obj = rocr.prediction, measure = \"npv\")@y.values)\n\n# add accuracy\nacc.unlisted <- unlist(performance(prediction.obj = rocr.prediction, measure = \"acc\")@y.values)\n\n# creaet a data frame that contains all performance measures\nperformance_measures <- data.frame(cutoff = rocr.prediction@cutoffs, tpr = tpr.unlisted, tnr = tnr.unlisted,\n                                   ppv = ppv.unlisted, npv = npv.unlisted, acc = acc.unlisted)\n\n# write to output file\nprint(auc)\nwrite.csv(x = performance_measures, file = argv$o, row.names = FALSE)\n",
+    "created" : 1496072177914.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1986484537",
+    "id" : "61C4F6BE",
+    "lastKnownWriteTime" : 1496072161,
+    "last_content_update" : 1496072161,
+    "path" : "~/workspace/rscripts/kcnq1_modeling/compute_performance_measures.R",
+    "project_path" : "compute_performance_measures.R",
+    "properties" : {
+        "source_window_id" : "",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

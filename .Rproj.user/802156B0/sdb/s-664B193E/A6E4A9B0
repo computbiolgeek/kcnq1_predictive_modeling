@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "#!/usr/bin/env Rscript\n\n# load library argparser\nlibrary(argparser)\nlibrary(ggplot2)\n\n# create an arg.parser object for argument parsing\nargs.parser <- arg_parser(description = \"This script takes a BCL score table and quality measure as inputs.\n                          It generates a set of score versus quality measure plots.\")\nargs.parser <- add_argument(parser = args.parser, arg = \"score_table\", help = \"BCL score table\")\nargs.parser <- add_argument(parser = args.parser, arg = \"quality_measure\", help = \"quality measure, for example RMSD\", default = \"RMSD\")\nargs.parser <- add_argument(parser = args.parser, arg = \"output_prefix\", help = \"prefix for the output filename\")\nargs <- parse_args(parser = args.parser, argv = commandArgs(trailingOnly = TRUE))\n\n# read in the score table\nscore.table <- read.table(file = args$score_table, header = TRUE)\n# score.table <- score.table.raw[order(score.table.raw[, \"rgyr\"], decreasing = FALSE),][1:100,]\n# score.table[101, ] <- score.table.raw[score.table.raw[, args$quality_measure] == 0, ]\n\n# score names\nscore.names <- c(\"aadist\", \"aaneigh\", \"aa_pair_interaction\", \"rgyr\", \"score_sum\")\nscore.table$score_sum <- score.table[, \"aaneigh\"] + score.table[, \"aa_pair_interaction\"] + score.table[, \"rgyr\"]\n\n# now create score vs quality measure plots\nscore.table$native <- ifelse(score.table[, args$quality_measure] == 0, \"native\", \"decoy\")\nnative.colors <- c(\"native\" = \"red\", \"decoy\" = \"black\")\nfor(score in score.names) {\n  p <- ggplot(\n      data = score.table, \n      mapping = aes(\n        x = score.table[, args$quality_measure], \n        y = score.table[, score], \n        colour = score.table[, \"native\"])\n    ) + \n    geom_point() + scale_color_manual(values = native.colors) + \n    labs(x = \"RMSD\", y = score) + theme(legend.position = \"none\")\n  ggsave(\n    filename = paste(args$output_prefix, \"_\", score, \"_\", args$quality_measure, \".png\", sep = \"\"),\n    width = 7, height = 7, units = \"in\"\n  )\n}",
+    "created" : 1496071255547.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3788568057",
+    "id" : "A6E4A9B0",
+    "lastKnownWriteTime" : 1493910891,
+    "last_content_update" : 1493910891,
+    "path" : "~/workspace/rscripts/bcl_rosetta_related/score_vs_quality.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

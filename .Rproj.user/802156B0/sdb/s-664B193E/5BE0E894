@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "# extract SNAP scores\n\n# load training set\ndf <- read.csv(file = \"training_dataset.csv\", header = TRUE, stringsAsFactors = FALSE)\n\n# the list of variants\nvariants <- paste(df$w, df$seq_pos, df$m, sep = \"\")\n\n# load all SNAP scores\nsnap_scores <- read.csv(file = \"snap_scores_all.csv\", header = TRUE)\nrownames(snap_scores) <- snap_scores$Variant\n\n# get SNAP scores for training set\nsnap_scores_training_set <- snap_scores[variants, ]\nsnap_scores_training_set$Label <- df$label\n\n# write to file\nwrite.csv(x = snap_scores_training_set, file = \"snap_scores_training_set.csv\", row.names = FALSE)\n",
+    "created" : 1496090309113.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2407056593",
+    "id" : "5BE0E894",
+    "lastKnownWriteTime" : 1496090852,
+    "last_content_update" : 1496090852629,
+    "path" : "~/workspace/rscripts/kcnq1_modeling/scripts/extract_snap_scores.R",
+    "project_path" : "scripts/extract_snap_scores.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
