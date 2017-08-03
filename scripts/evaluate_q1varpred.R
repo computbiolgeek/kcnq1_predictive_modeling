@@ -4,16 +4,14 @@ library(ROCR)
 # set working directory to where the data is stored
 setwd("/dors/meilerlab/home/lib14/projects/kcnq1/modeling/vu_collection/hidden1neuron_nodropout/")
 
-replicates <- 200
+replicates <- 30
 folds <- 3
-aucs.test <- numeric(length = replicates)
-mccs.test <- numeric(length = replicates)
-tprs.test <- numeric(length = replicates)
-tnrs.test <- numeric(length = replicates)
-accs.test <- numeric(length = replicates)
+aucs.test <- mccs.test <- ppvs.test <- npvs.test <- tprs.test <- tnrs.test <- accs.test <- numeric(length = replicates)
 for (i in 1:replicates) {
   aucs.test.folds <- numeric(length = folds)
   mccs.test.folds <- numeric(length = folds)
+  ppvs.test.folds <- numeric(length = folds)
+  npvs.test.folds <- numeric(length = folds)
   tprs.test.folds <- numeric(length = folds)
   tnrs.test.folds <- numeric(length = folds)
   accs.test.folds <- numeric(length = folds)
@@ -48,11 +46,17 @@ for (i in 1:replicates) {
     tprs.test.folds[j + 1] <- tprs.unlisted[2]
     tnrs.unlisted <- unlist(performance(prediction.obj = rocr.test.new, measure = "tnr")@y.values)
     tnrs.test.folds[j + 1] <- tnrs.unlisted[2]
+    ppvs.unlisted <- unlist(performance(prediction.obj = rocr.test.new, measure = "ppv")@y.values)
+    ppvs.test.folds[j + 1] <- ppvs.unlisted[2]
+    npvs.unlisted <- unlist(performance(prediction.obj = rocr.test.new, measure = "npv")@y.values)
+    npvs.test.folds[j + 1] <- npvs.unlisted[2]
     accs.unlisted <- unlist(performance(prediction.obj = rocr.test.new, measure = "acc")@y.values)
     accs.test.folds[j + 1] <- accs.unlisted[2]
   }
   aucs.test[i] <- mean(aucs.test.folds)
   mccs.test[i] <- mean(mccs.test.folds)
+  ppvs.test[i] <- mean(tprs.test.folds)
+  npvs.test[i] <- mean(tnrs.test.folds)
   tprs.test[i] <- mean(tprs.test.folds)
   tnrs.test[i] <- mean(tnrs.test.folds)
   accs.test[i] <- mean(accs.test.folds)
