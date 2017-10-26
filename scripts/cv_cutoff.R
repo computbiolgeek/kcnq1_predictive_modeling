@@ -98,31 +98,31 @@ mccs <- cbind(mccs, apply(mccs, MARGIN = 1, FUN = mean))
 aucs <- cbind(aucs, apply(aucs, MARGIN = 1, FUN = mean))
 
 # print performance evaluation info
-print("\n\n-------------true positive rate----------------\n\n")
+print("-------------true positive rate----------------")
 print(paste("mean tpr:", mean(tprs[, 4], na.rm = TRUE), sep = " "))
+cat("tpr quantiles:\n")
+quantile(tprs[, 4], na.rm = TRUE)
 # mean.tpr <- function(data, indices) {
 #   bt <- data[indices]
 #   return(mean(bt, na.rm = TRUE))
 # }
 # tpr.boot <- boot(data = tprs[, 4], statistic = mean.tpr, R = 1000)
 # print(boot.ci(tpr.boot, conf = 0.95, type = "norm"))
-print("\n\n-------------true negative rate----------------\n\n")
 print(paste("mean tnr:", mean(tnrs[, 4], na.rm = TRUE), sep = " "))
-# mean.tnr <- function(data, indices) {
-#   bt <- data[indices]
-#   return(mean(bt, na.rm = TRUE))
-# }
-# tnr.boot <- boot(data = tprs[, 4], statistic = mean.tnr, R = 1000)
-# print(boot.ci(tnr.boot, conf = 0.95, type = "norm"))
-print("\n\n-------------positive predictive value----------------\n\n")
+cat("tnr quantiles:\n")
+quantile(tnrs[, 4], na.rm = TRUE)
 print(paste("mean ppv:", mean(ppvs[, 4], na.rm = TRUE), sep = " "))
-# mean.ppv <- function(data, indices) {
-#   bt <- data[indices]
-#   return(mean(bt, na.rm = TRUE))
-# }
-# ppv.boot <- boot(data = ppvs[, 4], statistic = mean.ppv, R = 1000)
-# print(boot.ci(ppv.boot, conf = 0.95, type = "norm"))
+cat("ppv quantiles:\n")
+quantile(ppvs[, 4], na.rm = TRUE)
 print(mean(npvs[, 4], na.rm = TRUE))
+cat("npv quantiles:\n")
+quantile(npvs[, 4], na.rm = TRUE)
 print(mean(accs[, 4], na.rm = TRUE))
+cat("accuracy quantiles:\n")
+quantile(accs[, 4], na.rm = TRUE)
 print(mean(mccs[, 4], na.rm = TRUE))
+cat("mcc quantiles:\n")
+quantile(mccs[, 4], na.rm = TRUE)
 print(mean(aucs[, 4], na.rm = TRUE))
+cat("auc quantiles:\n")
+quantile(aucs[, 4], na.rm = TRUE)

@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+
 """
 Created on Mon Jun 12 16:22:59 2017
 @summary: This script was written to be adapted for the Q1VarPred web server.
@@ -11,36 +12,114 @@ Created on Mon Jun 12 16:22:59 2017
 
 from argparse import ArgumentParser
 import pandas as pd
+import csv
 
-# parse command line options and arguments
-parser = ArgumentParser()
-parser.add_argument('--query', help = 'a file containing query variants, \
-                    one per line, in the format HGVS notation, e.g. V207M')
-parser.add_argument("--output", help = "output filename")
-args = parser.parse_args()
+def get_prediction(wt, var, resi):
+    '''
+    Get the prediction for the given variant.
 
-# dataset
-ds = pd.read_csv('all_predictions_Q1VarPred.csv')
+    Parameter
+    ---------
+    wt : str
+        one-letter amino acid code
+    
+    var : str
+        one-letter amino acid code
 
-# list of query variants
-query_file = open(args.query, 'rt')
+    resi : int
+        residue ID
 
-# retrieve the label and localPPV for each query
-output = open(args.output, 'wt')
-output.write('{:7} {:13} {:11}\n'.format('Variant', 'Label', 'Probability'))
-for query in query_file.readlines():
-  query = query.rstrip()
-  wt = query[:1]
-  var = query[-1:]
-  if wt == var:
-    print('Wild type residue is the same as the variant residue, invalid input ' + query + '!')
-    output.write('{:7} {}\n'.format(query, 'Invalid input'))
-    continue
-  resi = int(query[1:-1])
-  if wt != ds.ix[resi - 1, 'Wild.type']:
-    print('The wild type at position ' + str(resi) + ' did not match the canonical residue type!' )
-    output.write('{:7} {}\n'.format(query, 'Incorrect wild type residue'))
-    continue
-  label, probability = ds.ix[resi - 1, [var + '.label', var + '.localPPV']]
-  output.write('{:7} {:13} {:<4.3f}\n'.format(query, label, probability))
-output.close()
+    Returns
+    -------
+    '''
+    # dataset of all predictions
+    ds = pd.read_csv('../data/all_predictions_Q1VarPred.csv')
+
+    if wt == var:
+        message = 'Wild type residue is the same as the variant residue, invalid input ' + wt + str(resi) + var + '!'
+        output_line = [resi, one2three(wt), wt, one2three(var), var, message]
+    elif wt != ds.ix[resi - 1, 'Wild.type']:
+        message = 'The wild type at position ' + str(resi) + ' did not match the canonical residue type, invalid input ' + wt + str(resi) + var + '!'
+        output_line = [resi, one2three(wt), wt, one2three(var), var, message]
+    else:
+        label, probability = ds.ix[resi - 1, [var + '.label', var + '.localPPV']]
+        output_line = [resi, one2three(wt), wt, one2three(var), var, label, '{:<4.3f}'.format(probability)]
+    return output_line
+
+
+def one2three(input_code):
+    one2three = {
+        'A': 'ALA',
+        'R': 'ARG',
+        'N': 'ASN',
+        'D': 'ASP',
+        'C': 'CYS',
+        'E': 'GLU',
+        'Q': 'GLN',
+        'G': 'GLY',
+        'H': 'HIS',
+        'I': 'ILE',
+        'L': 'LEU',
+        'K': 'LYS',
+        'M': 'MET',
+        'F': 'PHE',
+        'P': 'PRO',
+        'S': 'SER',
+        'T': 'THR',
+        'W': 'TRP',
+        'Y': 'TYR',
+        'V': 'VAL'
+    }
+
+    # make sure that input is valid
+    assert len(input_code) == 1, 'input_code must have extactly one letter'
+    assert input_code in one2three.keys(), 'given input_code was not recognized'
+
+    # return the one-letter code
+    input_code = input_code.upper()
+    return one2three[input_code]
+
+
+def main():
+    '''
+    '''
+    # parse command line options and arguments
+    parser = ArgumentParser()
+    parser.add_argument('--query', help = 'a file containing query variants, \
+                        one per line, in the format HGVS notation, e.g. V207M, or \
+                        comma/whitespace-separated variants on the same line.')
+    parser.add_argument("--output", help = "output filename")
+    args = parser.parse_args()
+
+    # list of query variants
+    query_file = open(args.query, 'rt')
+
+    # retrieve the label and localPPV for each query
+    output_lines = []
+    output_lines.append(['Residue ID', 'Wild type (three letter code)', 'Wild type (one letter code)', 'Variant (three letter code)', 'Variant (one letter code)', 'Label', 'Probability'])
+
+    # retrieve prediction for each variant
+    with open(args.query, 'rt') as query_file:
+        for query_line in query_file.readlines():
+            query_line = query_line.strip()
+            # parse the query line
+            if ',' in query_line:
+                variants = [v.strip() for v in query_line.split(',')]
+            else:
+                variants = query_line.split()
+            for v in variants:
+                wt = v[:1].upper()
+                var = v[-1:].upper()
+                resi = int(v[1:-1])
+                output_line = get_prediction(wt, var, resi)
+                output_lines.append(output_line)
+
+    # write predictions
+    with open(args.output, 'wt') as output_file:
+        writer = csv.writer(output_file)
+        for l in output_lines:
+            writer.writerow(l)
+
+
+if __name__ == '__main__':
+    main()
